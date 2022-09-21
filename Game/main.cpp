@@ -40,13 +40,8 @@ int main()
         capturer.start();
 
         std::thread receivePacket(&Client::receivePacket, std::ref(client), std::ref(packet), std::ref(players), std::ref(thisPlayer));
-        receivePacket.detach();
-
         std::thread receiverloop(&AudioCapturer::receiveLoop, std::ref(capturer), std::ref(packet));
-        receiverloop.detach();
-
         std::thread activeness(&AudioRecorder::activeness, std::ref(recorder));
-        activeness.detach();
 
         while (window.isOpen())
         {
@@ -113,6 +108,10 @@ int main()
 
             window.display();
         }
+
+        receivePacket.join();
+        receiverloop.join();
+        activeness.join();
     }
 
     return 0;

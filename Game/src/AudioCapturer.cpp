@@ -47,9 +47,8 @@ void AudioCapturer::receiveLoop(sf::Packet& packet)
 
         if (client.receivedData)
         {
-            std::cout << "copy: " << copy.getDataSize() << std::endl
-                << "packet: " << packet.getDataSize() << std::endl;
-
+            std::cout << "Evet" << std::endl;
+        
             std::uint8_t command;
             copy >> command;
 
@@ -64,6 +63,7 @@ void AudioCapturer::receiveLoop(sf::Packet& packet)
                     std::memcpy(&(samples[oldSize]),
                                 static_cast<const char*>(copy.getData()) + 1,
                                 sampleCount * sizeof(std::int16_t));
+                    client.receivedData = false;
                 }
             }
 
@@ -77,8 +77,5 @@ void AudioCapturer::receiveLoop(sf::Packet& packet)
             else
                 finished = true;
         }
-
-        else
-            std::cout << "Client didn't receive any data" << std::endl;
     }
 }
