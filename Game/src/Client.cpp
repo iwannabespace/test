@@ -3,7 +3,7 @@
 #include <iostream>
 
 Client::Client(const sf::IpAddress& ip, int port)
-    : ip(ip), port(port), receivedAudio(false), receivedData(false)
+    : ip(ip), port(port), receivedAudio(false), receivedPosition(false)
 {
 }
 
@@ -17,6 +17,11 @@ bool Client::connect()
         return false;
 
     return true;
+}
+
+void Client::disconnect()
+{
+    socket.disconnect();
 }
 
 bool Client::send(sf::Packet& packet)
@@ -33,9 +38,12 @@ bool Client::receivePacket(sf::Packet& packet, std::unordered_map<std::uint32_t,
     sf::Packet copy;
 
     while (true)
-    {    
+    {
         if (socket.receive(recv) != sf::Socket::Done)
             return false;
+
+        if (receivedAudio)
+            std::cout << "Data is not used!" << std::endl;
         
         std::uint8_t command;
         std::uint32_t id;
@@ -60,11 +68,18 @@ bool Client::receivePacket(sf::Packet& packet, std::unordered_map<std::uint32_t,
                     while (copy >> id)
                         players[id] = Player(5.f, id);
                     break;
+
+                case ServerCommand::RECEIVE_AUDIO:
+                    receivedAudio = true;
+                    packet = recv;
+                    break;
+
+                case ServerCommand::RECEIVE_POSITION:
+                    receivedPosition = true;
+                    packet = recv;
+                    break;
         
                 default:
-                    std::scoped_lock lock(mutex);
-                    packet = recv;
-                    receivedData = true;
                     break;
             }
         }

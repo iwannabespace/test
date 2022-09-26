@@ -4,6 +4,7 @@
 #include <SFML/Audio.hpp>
 #include <iostream>
 #include "Client.hpp"
+#include "AudioCapturer.hpp"
 
 class AudioRecorder : public sf::SoundRecorder
 {

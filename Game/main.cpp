@@ -11,6 +11,7 @@
 #include "include/AudioRecorder.hpp"
 #include "include/AudioCapturer.hpp"
 #include <cmath>
+#include <array>
 
 int main()
 {
@@ -37,11 +38,11 @@ int main()
         StartScreen startscreen(window, sf::Color(172, 192, 146));
         AudioRecorder recorder(client);
         AudioCapturer capturer(client);
-        capturer.start();
+        capturer.play();
 
-        std::thread receivePacket(&Client::receivePacket, std::ref(client), std::ref(packet), std::ref(players), std::ref(thisPlayer));
-        std::thread receiverloop(&AudioCapturer::receiveLoop, std::ref(capturer), std::ref(packet));
-        std::thread activeness(&AudioRecorder::activeness, std::ref(recorder));
+        std::thread receivePacket;
+        std::thread receiverloop;
+        std::thread activeness;
 
         while (window.isOpen())
         {
@@ -56,7 +57,7 @@ int main()
                         break;
 
                     case sf::Event::Resized:
-                        /*if (startscreen)
+                        if (startscreen)
                         {    
                             view.setCenter({ 
                                 static_cast<float>(window.getSize().x) / 2,
@@ -65,35 +66,37 @@ int main()
                             view.setSize(sf::Vector2f(window.getSize()));
                             
                             startscreen.updateOnResize();
-                        }*/
+                        }
                         break;
                 }
             }
 
-            if (client.receivedData)
+            if (!receivePacket.joinable())
+                receivePacket = std::thread(&Client::receivePacket, std::ref(client), std::ref(packet), std::ref(players), std::ref(thisPlayer));
+            
+            if (!receiverloop.joinable())
+                receiverloop = std::thread(&AudioCapturer::receiveLoop, std::ref(capturer), std::ref(packet));
+
+            if (!activeness.joinable())
+                activeness = std::thread(&AudioRecorder::activeness, std::ref(recorder));
+
+            if (client.receivedPosition)
             {
                 sf::Packet copy = packet;
                 std::uint8_t command;
 
                 if (copy >> command)
                 {
-                    switch (command)
-                    {   
-                        case ServerCommand::RECEIVE_POSITION:
-                        {
-                            float x, y;
-                            std::uint32_t id;
+                    float x, y;
+                    std::uint32_t id;
 
-                            copy >> id >> x >> y;
+                    copy >> id >> x >> y;
 
-                            for (auto& player : players)
-                                if (player.first == id)
-                                    player.second.setPosition({ x, y });
+                    for (auto& player : players)
+                        if (player.first == id)
+                            player.second.setPosition({ x, y });
 
-                            client.receivedData = false;
-                            break;
-                        }
-                    }
+                    client.receivedPosition = false;
                 }
             }
 
@@ -109,9 +112,8 @@ int main()
             window.display();
         }
 
-        receivePacket.join();
-        receiverloop.join();
-        activeness.join();
+        client.disconnect();
+        std::terminate();
     }
 
     return 0;

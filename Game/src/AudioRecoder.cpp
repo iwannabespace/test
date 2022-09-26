@@ -1,6 +1,7 @@
 
 #include "../include/AudioRecorder.hpp"
 
+
 AudioRecorder::AudioRecorder(Client& client) 
     : client(client), active(false)
 {
@@ -14,12 +15,12 @@ AudioRecorder::~AudioRecorder()
 void AudioRecorder::activeness()
 {
     while (true)
-    {
+    {   
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && !active)
         {
             std::scoped_lock lock(mutex);
             active = true;
-            start();
+            if (start()) {}
         }
 
         if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && active)

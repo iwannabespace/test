@@ -90,7 +90,7 @@ void Server::receive()
 
                                 else if (command == ServerCommand::RECEIVE_AUDIO)
                                 {
-                                    std::cout << "Received audio samples" << std::endl;
+                                    //std::cout << "Received audio samples" << std::endl;
                                     sendPacket = recvPacket;
                                 }
 
