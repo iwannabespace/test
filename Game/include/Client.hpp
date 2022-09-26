@@ -4,10 +4,8 @@
 #include <SFML/Audio.hpp>
 #include "Player.hpp"
 #include "../../Common/Headers.hpp"
-#include "AudioCapturer.hpp"
 
 class Player;
-class AudioCapturer;
 
 class Client
 {

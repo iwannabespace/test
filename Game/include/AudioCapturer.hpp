@@ -8,8 +8,6 @@
 #include <mutex>
 #include "Client.hpp"
 
-class Client;
-
 class AudioCapturer : public sf::SoundStream
 {
 public:
